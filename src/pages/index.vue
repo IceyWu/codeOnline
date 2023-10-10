@@ -1,5 +1,6 @@
 <script setup>
 import { ElMessage } from "element-plus";
+import Editor from "../components/Editor.vue";
 
 onMounted(() => {});
 
@@ -79,17 +80,11 @@ const handleNodeClick = async (data) => {
   }
 };
 const handleSaveFile = async () => {
-  // const handle = await showSaveFilePicker();
-  // console.log("🌵-----handle-----", handle);
-  // const writable = await handle.createWritable();
-  // await writable.write(showCode.value);
-  // await writable.close();
+  // console.log(
+  //   "🎁chooseFileSystemFileHandle.value------------------------------>",
+  //   showCode.value
 
-  console.log(
-    "🎁chooseFileSystemFileHandle.value------------------------------>",
-    showCode.value,
-    highlightRef.value,
-  );
+  // );
   chooseFileSystemFileHandle.value.createWritable().then((writable) => {
     writable.write(showCode.value);
     writable.close();
@@ -98,27 +93,33 @@ const handleSaveFile = async () => {
 
 const showCode = ref("");
 const highlightRef = ref(null);
+const language = ref("javascript");
+const editorMounted = (editor) => {
+  console.log("editor实例加载完成", editor);
+};
 </script>
 
 <template>
-  <div class="h-screen w-full gap-5">
-    <h1>Hello Nginx tool!</h1>
+  <div class="h-screen w-full gap-5 box-border flex">
+    <div class="w-50">
+      <el-button type="primary" @click="openFile()">打开文件夹 </el-button>
+      <el-button size="small" type="primary" @click="handleSaveFile"
+        >保存文件</el-button
+      >
+      <el-tree
+        :data="folderList"
+        :props="defaultProps"
+        @node-click="handleNodeClick"
+      />
+    </div>
 
-    <el-button type="primary" @click="openFile()">打开文件夹 </el-button>
-    <el-button size="small" type="primary" @click="handleSaveFile"
-      >保存文件</el-button
-    >
-    <el-tree
-      :data="folderList"
-      :props="defaultProps"
-      @node-click="handleNodeClick"
-    />
-    <highlightjs
-      ref="highlightRef"
-      autodetect
-      
-      :code="showCode"
-    />
+    <div class="flex-1 bg-red-100">
+      <Editor
+        v-model="showCode"
+        :language="language"
+        @editor-mounted="editorMounted"
+      />
+    </div>
   </div>
 </template>
 

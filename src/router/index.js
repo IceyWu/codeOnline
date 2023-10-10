@@ -40,7 +40,7 @@ const routes = [
     path: '/',
     name: 'base',
     redirect: '/index',
-    component: Layout,
+    // component: Layout,
     meta: {
       title: '首页',
     },
