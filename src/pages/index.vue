@@ -1,6 +1,7 @@
 <script setup>
 import { ElMessage } from "element-plus";
 import Editor from "../components/Editor.vue";
+import { getDirectory } from "~/utils/getLocalDirectory";
 
 onMounted(() => {});
 
@@ -20,31 +21,44 @@ const processHandler = async (handle) => {
   const iter = await handle.entries();
   for await (const info of iter) {
     const subHandle = await processHandler(info[1]);
-    // console.log("🌳-----subHandle-----", subHandle);
-    const addP = {
-      type: subHandle.kind,
-      name: subHandle.name,
-      FileSystemFileHandle: structuredClone(subHandle),
-    };
-    // console.log("🐳-----addP-----", addP);
-    handle.children.push(subHandle);
-    addPart.children.push(addP);
+    console.log("🌳-----subHandle-----", subHandle);
+
+    const { kind, name, children } = subHandle;
+    if (kind === "file") {
+      addPart.children.push({
+        type: kind,
+        name,
+        FileSystemFileHandle: subHandle,
+      });
+      handle.children.push(subHandle);
+    } else {
+      addPart.children.push({
+        type: kind,
+        name,
+        children,
+        FileSystemFileHandle: subHandle,
+      });
+    }
   }
+  console.log("🌳-----addPart.children-----", addPart.children);
   folderList.value = [addPart];
   return handle;
 };
 
 const openFile = async () => {
-  try {
-    // 获得文件夹的句柄
-    const handle = await showDirectoryPicker({
-      mode: "readwrite",
-    });
-    const root = await processHandler(handle);
-  } catch {
-    //用户拒绝查看文件
-    ElMessage.error("用户拒绝查看文件");
-  }
+  const dir = await getDirectory();
+  folderList.value = [dir];
+  console.log("🍪-----dir-----", dir);
+  // try {
+  //   // 获得文件夹的句柄
+  //   const handle = await showDirectoryPicker({
+  //     mode: "readwrite",
+  //   });
+  //   const root = await processHandler(handle);
+  // } catch {
+  //   //用户拒绝查看文件
+  //   ElMessage.error("用户拒绝查看文件");
+  // }
 };
 const defaultProps = {
   children: "children",
@@ -62,22 +76,27 @@ const getFileContent = (file) => {
 const chooseFileSystemFileHandle = ref(null);
 
 const handleNodeClick = async (data) => {
-  // console.log("🌵-----handleNodeClick-----", data);
-  const { FileSystemFileHandle, type } = data;
-  if (type === "file") {
-    const file = (await FileSystemFileHandle.getFile()) || "";
-    chooseFileSystemFileHandle.value = FileSystemFileHandle;
-    // console.log("🎁-----file-----", file);
-    // const reader = new FileReader();
-    // console.log("🎉-----reader-----", reader);
-    try {
-      const content = await getFileContent(file);
-      showCode.value = content;
-      console.log("🌵-----content-----", content);
-    } catch (error) {
-      console.log("🌵-----error-----", error);
-    }
+  console.log("🌵-----handleNodeClick-----", data);
+  const { content } = data;
+  if (content) {
+    showCode.value = content;
+    return;
   }
+  // const { FileSystemFileHandle, type } = data;
+  // if (type === "file") {
+  //   const file = (await FileSystemFileHandle.getFile()) || "";
+  //   chooseFileSystemFileHandle.value = FileSystemFileHandle;
+  //   // console.log("🎁-----file-----", file);
+  //   // const reader = new FileReader();
+  //   // console.log("🎉-----reader-----", reader);
+  //   try {
+  //     const content = await getFileContent(file);
+  //     showCode.value = content;
+  //     console.log("🌵-----content-----", content);
+  //   } catch (error) {
+  //     console.log("🌵-----error-----", error);
+  //   }
+  // }
 };
 const handleSaveFile = async () => {
   // console.log(
