@@ -30,6 +30,11 @@ export const getFileContent = (file) => {
     fileReader.readAsText(file, "utf-8");
   });
 };
+// 获取文件后缀
+export const getFileSuffix = (fileName) => {
+  const index = fileName.lastIndexOf(".");
+  return fileName.substring(index + 1);
+};
 
 export const directoryDataFormatter = async (
   directoryHandler,
@@ -41,6 +46,10 @@ export const directoryDataFormatter = async (
     name: directoryHandler.name,
     kind: directoryHandler.kind,
     path,
+    suffix:
+      directoryHandler.kind == "directory"
+        ? "folder"
+        : getFileSuffix(directoryHandler.name),
   };
 
   if (

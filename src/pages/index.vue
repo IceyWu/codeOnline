@@ -2,6 +2,7 @@
 import { ElMessage } from "element-plus";
 import Editor from "../components/Editor.vue";
 import { getDirectory } from "~/utils/getLocalDirectory";
+import { iconGet } from "~/utils/iconGet";
 
 onMounted(() => {});
 
@@ -77,11 +78,12 @@ const chooseFileSystemFileHandle = ref(null);
 
 const handleNodeClick = async (data) => {
   console.log("🌵-----handleNodeClick-----", data);
-  const { content } = data;
-  if (content) {
-    showCode.value = content;
-    return;
-  }
+  const { content, handler } = data;
+  chooseFileSystemFileHandle.value = handler;
+  // if (content) {
+  //   showCode.value = content;
+  //   return;
+  // }
   // const { FileSystemFileHandle, type } = data;
   // if (type === "file") {
   //   const file = (await FileSystemFileHandle.getFile()) || "";
@@ -89,25 +91,30 @@ const handleNodeClick = async (data) => {
   //   // console.log("🎁-----file-----", file);
   //   // const reader = new FileReader();
   //   // console.log("🎉-----reader-----", reader);
-  //   try {
-  //     const content = await getFileContent(file);
-  //     showCode.value = content;
-  //     console.log("🌵-----content-----", content);
-  //   } catch (error) {
-  //     console.log("🌵-----error-----", error);
-  //   }
-  // }
+  try {
+    const file = (await handler.getFile()) || "";
+    const content = await getFileContent(file);
+    showCode.value = content;
+    console.log("🌵-----content-----", content);
+  } catch (error) {
+    console.log("🌵-----error-----", error);
+  }
 };
 const handleSaveFile = async () => {
-  // console.log(
-  //   "🎁chooseFileSystemFileHandle.value------------------------------>",
-  //   showCode.value
-
-  // );
-  chooseFileSystemFileHandle.value.createWritable().then((writable) => {
-    writable.write(showCode.value);
-    writable.close();
-  });
+  try {
+    // const fileHandle = await chooseFileSystemFileHandle.value.getFile();
+    // const writable = await fileHandle.createWritable();
+    // await writable.write(showCode.value);
+    // await writable.close();
+    chooseFileSystemFileHandle.value.createWritable().then((writable) => {
+      writable.write(showCode.value);
+      writable.close();
+      ElMessage.success("保存成功");
+    });
+  } catch (error) {
+    console.log("🐠-----error-----", error);
+    ElMessage.error("保存失败");
+  }
 };
 
 const showCode = ref("");
@@ -115,6 +122,9 @@ const highlightRef = ref(null);
 const language = ref("javascript");
 const editorMounted = (editor) => {
   console.log("editor实例加载完成", editor);
+};
+const append = (data) => {
+  console.log("🎉-----append-----", data);
 };
 </script>
 
@@ -125,11 +135,23 @@ const editorMounted = (editor) => {
       <el-button size="small" type="primary" @click="handleSaveFile"
         >保存文件</el-button
       >
+      <!-- <el-tree
+        :data="folderList"
+        :props="defaultProps"
+        @node-click="handleNodeClick"
+      /> -->
       <el-tree
         :data="folderList"
         :props="defaultProps"
         @node-click="handleNodeClick"
-      />
+      >
+        <template #default="{ node, data }">
+          <img :src="iconGet(data.suffix)" alt="" class="h-4 w-4 mr-1" />
+          <span class="custom-tree-node">
+            {{ node.label }}
+          </span>
+        </template>
+      </el-tree>
     </div>
 
     <div class="flex-1 bg-red-100">
