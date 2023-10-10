@@ -36,7 +36,9 @@ const processHandler = async (handle) => {
 const openFile = async () => {
   try {
     // 获得文件夹的句柄
-    const handle = await showDirectoryPicker();
+    const handle = await showDirectoryPicker({
+      mode: "readwrite",
+    });
     const root = await processHandler(handle);
   } catch {
     //用户拒绝查看文件
@@ -56,12 +58,14 @@ const getFileContent = (file) => {
     fileReader.readAsText(file, "utf-8");
   });
 };
+const chooseFileSystemFileHandle = ref(null);
 
 const handleNodeClick = async (data) => {
   // console.log("🌵-----handleNodeClick-----", data);
   const { FileSystemFileHandle, type } = data;
   if (type === "file") {
     const file = (await FileSystemFileHandle.getFile()) || "";
+    chooseFileSystemFileHandle.value = FileSystemFileHandle;
     // console.log("🎁-----file-----", file);
     // const reader = new FileReader();
     // console.log("🎉-----reader-----", reader);
@@ -75,13 +79,25 @@ const handleNodeClick = async (data) => {
   }
 };
 const handleSaveFile = async () => {
-  const handle = await showSaveFilePicker();
-  const writable = await handle.createWritable();
-  await writable.write(showCode.value);
-  await writable.close();
+  // const handle = await showSaveFilePicker();
+  // console.log("🌵-----handle-----", handle);
+  // const writable = await handle.createWritable();
+  // await writable.write(showCode.value);
+  // await writable.close();
+
+  console.log(
+    "🎁chooseFileSystemFileHandle.value------------------------------>",
+    showCode.value,
+    highlightRef.value,
+  );
+  chooseFileSystemFileHandle.value.createWritable().then((writable) => {
+    writable.write(showCode.value);
+    writable.close();
+  });
 };
 
 const showCode = ref("");
+const highlightRef = ref(null);
 </script>
 
 <template>
@@ -100,7 +116,7 @@ const showCode = ref("");
     <highlightjs
       ref="highlightRef"
       autodetect
-      contenteditable="true"
+      
       :code="showCode"
     />
   </div>
