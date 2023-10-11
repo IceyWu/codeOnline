@@ -63,18 +63,18 @@ export default defineComponent({
   setup(props, { emit }) {
     self.MonacoEnvironment = {
       getWorker(_: string, label: string) {
-        if (label === "json") {
-          return new jsonWorker();
-        }
-        if (["css", "scss", "less"].includes(label)) {
-          return new cssWorker();
-        }
-        if (["html", "handlebars", "razor"].includes(label)) {
-          return new htmlWorker();
-        }
-        if (["typescript", "javascript"].includes(label)) {
-          return new tsWorker();
-        }
+        // if (label === "json") {
+        //   return new jsonWorker();
+        // }
+        // if (["css", "scss", "less"].includes(label)) {
+        //   return new cssWorker();
+        // }
+        // if (["html", "handlebars", "razor"].includes(label)) {
+        //   return new htmlWorker();
+        // }
+        // if (["typescript", "javascript"].includes(label)) {
+        //   return new tsWorker();
+        // }
         return new EditorWorker();
       },
     };
